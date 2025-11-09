@@ -178,7 +178,20 @@ leaf kind-icon
   (add-to-list 'completion-at-point-functions #'cape-file))
 
 (leaf vterm
-  :ensure t)
+  :ensure t
+  :preface
+  (defun c/projectile-run-vterm nil
+	(interactive)
+	(let* ((project (projectile-completing-read
+					 "Select project: "
+					 (projectile-relevant-known-projects)))
+		   (default-directory project)
+		   (vterm-buffer-name (format "*vterm: %s*" (projectile-project-name project))))
+	  (if (get-buffer vterm-buffer-name)
+		  (switch-to-buffer vterm-buffer-name)
+		(vterm vterm-buffer-name))))
+  :bind (
+		 ([remap projectile-run-vterm] . c/projectile-run-vterm)))
 
 (leaf treesit
   :config
@@ -248,12 +261,25 @@ leaf kind-icon
 		 (neotree-mode-map
 		  ("." . neotree-hidden-file-toggle))))
 
+(leaf org
+  :init
+  (setq org-directory "~/Documents/org"
+		org-daily-tasks-file (format "%s/tasks.org" org-directory)
+		org-capture-templates '(("d" "Weekdays TODO" entry (file org-daily-tasks-file) "%[~/.emacs.d/assets/org-templates/weekdays-todo.org]" :prepend t))))
+
 (leaf org-roam
   :ensure t
-  :custom ((org-roam-directory . "~/Documents/org-roam")
+  :custom ((org-roam-directory . "~/Documents/org/roam/")
 		   (org-roam-db-autosync-mode . t)))
+
+(leaf org-modern
+  :ensure t
+  :custom
+  (org-modern-progress '("○" "◔" "◑" "◕" "✅"))
+  :hook
+  ((org-mode . org-modern-mode)
+   (org-agenda-finalize . org-modern-agenda)))
 
 ;; (leaf eldoc-box
 ;;   :ensure t
 ;;   :global-minor-mode eldoc-box-hover-mode eldoc-box-hover-at-point-mode)
-
