@@ -217,22 +217,20 @@
 
 (leaf git-gutter
   :ensure t
-  :init
-  (global-git-gutter-mode))
+  :global-minor-mode global-git-gutter-mode)
 
 (leaf magit
   :ensure t)
 
 (leaf nyan-mode
   :ensure t
-  :config
-  (nyan-mode))
+  :global-minor-mode t)
 
 (leaf projectile
   :ensure t
-  :config
-  (projectile-mode +1)
-  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
+  :global-minor-mode t
+  :bind ((projectile-mode-map
+		  ("C-c p" . projectile-command-map))))
 
 (leaf vim-jp-radio
   :vc ( :url "https://github.com/vim-jp-radio/vim-jp-radio.el"))
