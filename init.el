@@ -215,9 +215,9 @@
   :vc ( :url "https://github.com/jdtsmith/eglot-booster")
   :global-minor-mode t)
 
-(leaf git-gutter
+(leaf diff-hl
   :ensure t
-  :global-minor-mode global-git-gutter-mode)
+  :global-minor-mode t)
 
 (leaf magit
   :ensure t)
