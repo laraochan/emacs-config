@@ -64,8 +64,7 @@
 	    (menu-bar-mode . t)
 	    (tool-bar-mode . nil)
 	    (scroll-bar-mode . nil)
-	    (indnet-tabs-mode . nil))
-  :config (defalias 'yes-or-no-p 'y-or-n-p))
+	    (indnet-tabs-mode . nil)))
 
 (leaf autorevert
   :doc "revert buffers when files on disk change"
@@ -104,7 +103,7 @@
   :doc "Doom Emacs' Theme Pack"
   :ensure t
   :config
-  (load-theme 'doom-winter-is-coming-dark-blue t))
+  (load-theme 'doom-solarized-dark t))
 
 (leaf corfu
   :doc "COmpletion in Region FUnction"
@@ -116,8 +115,8 @@
 	   (corfu-popupinfo-delay . 0.1))
   :bind ((corfu-map
 	  ("C-s" . corfu-insert-separator))))
-
-(leaf kind-icon
+(
+leaf kind-icon
   :ensure t
   :after corfu
   :config
@@ -194,9 +193,11 @@
 	  (message "treesit: %s is already installed" lang)
 	(message "treesit: %s is not installed" lang)
 	(treesit-install-language-grammar lang)))))
+
 (leaf json-ts-mode
   :mode
   ("\\.json\\'" . json-ts-mode))
+
 (leaf tsx-ts-mode
   :mode
   (("\\.ts[x]?\\'" . tsx-ts-mode)
@@ -204,11 +205,15 @@
    ("\\.js[x]?\\'" . tsx-ts-mode)
    ("\\.[mc]js\\'" . tsx-ts-mode)))
 
+(leaf markdown-mode
+  :ensure t)
+
 (leaf eglot
   :doc "The Emacs Client for LSP servers"
   :hook ((tsx-ts-mode-hook . eglot-ensure))
   :custom ((eldoc-echo-area-use-multiline-p . nil)
            (eglot-connect-timeout . 600)))
+
 
 (leaf eglot-booster
   :when (executable-find "emacs-lsp-booster")
@@ -234,3 +239,21 @@
 
 (leaf vim-jp-radio
   :vc ( :url "https://github.com/vim-jp-radio/vim-jp-radio.el"))
+
+(leaf neotree
+  :ensure t
+  :custom ((neo-smart-open . t)
+		   (neo-create-file-auto-open . t))
+  :bind (("C-c e" . neotree-toggle)
+		 (neotree-mode-map
+		  ("." . neotree-hidden-file-toggle))))
+
+(leaf org-roam
+  :ensure t
+  :custom ((org-roam-directory . "~/Documents/org-roam")
+		   (org-roam-db-autosync-mode . t)))
+
+;; (leaf eldoc-box
+;;   :ensure t
+;;   :global-minor-mode eldoc-box-hover-mode eldoc-box-hover-at-point-mode)
+
