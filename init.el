@@ -22,33 +22,161 @@
     (leaf-keywords-init)))
 ;; </leaf-install-code>
 
-(tool-bar-mode -1)
+
+;; setting font - family & size
+(set-face-attribute 'default nil
+		    :family "JetBrainsMono"
+		    :height 130) ;; 130 = 13pt
+
 (when (equal window-system 'darwin)
   (setq mac-option-modifier 'meta))
 
+(leaf cus-edit
+  :doc "tools for customizing Emacs and Lisp packages"
+  :custom `((custom-file . ,(locate-user-emacs-file "custom.el"))))
+
+(leaf cus-start
+  :doc "define customization properties of builtins"
+  :preface
+  (defun c/redraw-frame nil
+    (interactive)
+    (redraw-frame))
+  :bind (("M-ESC ESC" . c/redraw-frame))
+  :custom '((user-full-name . "Sora Terao")
+	    (user-mail-address . "me@larao.dev")
+	    (user-login-name . "larao")
+	    (create-lockfiles . nil)
+	    (tab-width . 4)
+	    (debug-on-error . t)
+	    (init-file-debug . t)
+	    (frame-resize-pixelwise . t)
+	    (enable-recursive-minibuffers . t)
+	    (history-length . 1000)
+	    (history-delete-duplicates . t)
+	    (scroll-preserve-screen-position . t)
+	    (scroll-conservatively . 100)
+	    (mouse-wheel-scroll-amout . '(1 ((control) . 5)))
+	    (ring-bell-function . 'ignore)
+	    (text-quoting-style . 'straight)
+	    (truncate-lines . t)
+	    (use-dialog-box . nil)
+	    (use-file-dialog . nil)
+	    (menu-bar-mode . t)
+	    (tool-bar-mode . nil)
+	    (scroll-bar-mode . nil)
+	    (indnet-tabs-mode . nil))
+  :config (defalias 'yes-or-no-p 'y-or-n-p))
+
+(leaf autorevert
+  :doc "revert buffers when files on disk change"
+  :global-minor-mode global-auto-revert-mode)
+
+(leaf delsel
+  :doc "delete selection if you insert"
+  :global-minor-mode delete-selection-mode)
+
+(leaf paren
+  :doc "highlight matching paren"
+  :global-minor-mode show-paren-mode)
+
+(leaf savehist
+  :doc "Save minibuffer history"
+  :custom `((savehist-file . ,(locate-user-emacs-file "savehist")))
+  :global-minor-mode t)
+
+(leaf flymake
+  :doc "A universal on-the-fly syntax checker"
+  :bind ((prog-mode-map
+	  ("M-n" . flymake-goto-next-error)
+	  ("M-p" . flymake-goto-prev-error))))
+
+(leaf which-key
+  :doc "Display available keybindings in popup"
+  :global-minor-mode t)
+
 (leaf exec-path-from-shell
+  :doc "Get environment variables such as $PATH from the shell"
   :ensure t
   :config
   (exec-path-from-shell-initialize))
 
 (leaf doom-themes
+  :doc "Doom Emacs' Theme Pack"
   :ensure t
   :config
-  (load-theme 'doom-solarized-dark-high-contrast t))
+  (load-theme 'doom-winter-is-coming-dark-blue t))
 
 (leaf corfu
+  :doc "COmpletion in Region FUnction"
   :ensure t
-  :init
-  (global-corfu-mode)
-  (corfu-popupinfo-mode)
-  :config
-  (setq corfu-auto t
-	corfu-quit-no-match 'separator))
+  :global-minor-mode global-corfu-mode corfu-popupinfo-mode
+  :custom ((corfu-auto . t)
+	   (corfu-auto-delay . 0)
+	   (corfu-auto-prefix . 1)
+	   (corfu-popupinfo-delay . 0.1))
+  :bind ((corfu-map
+	  ("C-s" . corfu-insert-separator))))
+
 (leaf kind-icon
   :ensure t
   :after corfu
   :config
   (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
+(leaf vertico
+  :doc "VERTical Interactive COmpletion"
+  :ensure t
+  :global-minor-mode t)
+
+(leaf marginalia
+  :doc "Enrich existing commands with completion annotations"
+  :ensure t
+  :global-minor-mode t)
+
+(leaf consult
+  :doc "Consulting completing-read"
+  :ensure t
+  :hook (completion-list-mode-hook . consult-preview-at-point-mode)
+  :custom ((xref-show-xrefs-function . #'consult-xref)
+	   (xref-show-definitions-function . #'consult-xref)
+	   (consult-line-start-from-top . t))
+  :bind (;; C-c bindings (mode-specific-map)
+	 ([remap switch-to-buffer] . consult-buffer)
+	 ([remap project-switch-to-buffer] . consult-buffer)
+
+	 ;; M-g bindings (goto-map)
+	 ([remap goto-line] . consult-goto-line)
+	 ([remap imenu] . consult-imenu)
+
+	 ;; C-M-s bindings
+	 ("C-s" . consult-line)
+	 ("C-M-s" . nil)
+	 ("C-M-s s" . isearch-forward)
+	 ("C-M-s C-s" . isearch-forward-regexp)
+	 ("C-M-s r" . consult-ripgrep)))
+
+(leaf affe
+  :doc "Asynchronous Fuzzy Finder for Emacs"
+  :ensure t
+  :custom ((affe-highlight-function . 'orderless-highlight-matches)
+           (affe-regexp-function . 'orderless-pattern-compiler))
+  :bind (("C-M-s r" . affe-grep)
+         ("C-M-s f" . affe-find)))
+
+(leaf orderless
+  :doc "Completion style for matching regexps in any order"
+  :ensure t
+  :config
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides
+        '((file (styles partial-completion)))))
+
+(leaf cape
+  :doc "Completion At Point Extensions"
+  :ensure t
+  :config
+  (add-to-list 'completion-at-point-functions #'cape-file))
 
 (leaf vterm
   :ensure t)
@@ -77,9 +205,15 @@
    ("\\.[mc]js\\'" . tsx-ts-mode)))
 
 (leaf eglot
-  :ensure t
-  :config
-  (add-hook 'tsx-ts-mode-hook 'eglot-ensure))
+  :doc "The Emacs Client for LSP servers"
+  :hook ((tsx-ts-mode-hook . eglot-ensure))
+  :custom ((eldoc-echo-area-use-multiline-p . nil)
+           (eglot-connect-timeout . 600)))
+
+(leaf eglot-booster
+  :when (executable-find "emacs-lsp-booster")
+  :vc ( :url "https://github.com/jdtsmith/eglot-booster")
+  :global-minor-mode t)
 
 (leaf git-gutter
   :ensure t
@@ -94,27 +228,11 @@
   :config
   (nyan-mode))
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("d97ac0baa0b67be4f7523795621ea5096939a47e8b46378f79e78846e0e4ad3d"
-     "7ec8fd456c0c117c99e3a3b16aaf09ed3fb91879f6601b1ea0eeaee9c6def5d9"
-     "b754d3a03c34cfba9ad7991380d26984ebd0761925773530e24d8dd8b6894738"
-     "13096a9a6e75c7330c1bc500f30a8f4407bd618431c94aeab55c9855731a95e1"
-     "Aec7b55f2a13307a55517fdf08438863d694550565dee23181d2ebd973ebd6b8"
-     "21d2bf8d4d1df4859ff94422b5e41f6f2eeff14dd12f01428fa3cb4cb50ea0fb"
-     "4990532659bb6a285fee01ede3dfa1b1bdf302c5c3c8de9fad9b6bc63a9252f7"
-     "3613617b9953c22fe46ef2b593a2e5bc79ef3cc88770602e7e569bbd71de113b"
-     "720838034f1dd3b3da66f6bd4d053ee67c93a747b219d1c546c41c4e425daf93"
-     "a6920ee8b55c441ada9a19a44e9048be3bfb1338d06fc41bce3819ac22e4b5a1"
-     default))
- '(package-selected-packages nil))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+(leaf projectile
+  :ensure t
+  :config
+  (projectile-mode +1)
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
+
+(leaf vim-jp-radio
+  :vc ( :url "https://github.com/vim-jp-radio/vim-jp-radio.el"))
