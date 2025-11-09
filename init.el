@@ -274,11 +274,11 @@ leaf kind-icon
 
 (leaf org-modern
   :ensure t
-  :custom
-  (org-modern-progress '("○" "◔" "◑" "◕" "✅"))
+  :custom ((org-modern-progress . '("○" "◔" "◑" "◕" "✅"))
+			(org-modern-star . '("◉" "○" "●" "◆" "◇")))
   :hook
-  ((org-mode . org-modern-mode)
-   (org-agenda-finalize . org-modern-agenda)))
+  ((org-mode-hook . org-modern-mode)
+   (org-agenda-finalize-hook . org-modern-agenda)))
 
 ;; (leaf eldoc-box
 ;;   :ensure t
