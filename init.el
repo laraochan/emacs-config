@@ -265,8 +265,14 @@ leaf kind-icon
   :init
   (setq org-directory "~/Documents/org"
 		org-daily-tasks-file (format "%s/tasks.org" org-directory)
-		org-capture-templates '(("d" "Weekdays TODO" entry (file org-daily-tasks-file) "%[~/.emacs.d/assets/org-templates/weekdays-todo.org]" :prepend t)))
-  :hook ((org-mode-hook . org-indent-mode)))
+		org-daily-money-file (format "%s/money.org" org-directory)
+		org-capture-templates '(("d" "Weekdays TODO" entry (file org-daily-tasks-file) "%[~/.emacs.d/assets/org-templates/weekdays-todo.org]" :prepend t)
+								("m" "household account book" entry (file org-daily-money-file) "%[~/.emacs.d/assets/org-templates/money_diary.org]" :prepend t))
+		org-startup-folded 'overview)
+  :hook ((org-mode-hook . org-indent-mode))
+  :bind (("C-c 0" . (lambda ()
+					  (interactive)
+					  (find-file org-daily-tasks-file)))))
 
 (leaf org-roam
   :ensure t
